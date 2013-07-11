@@ -1,12 +1,56 @@
+/**
+ * Copyright (c) 2013 Puppet Labs, Inc. and other contributors, as listed below.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Apache License, Version 2.0
+ * which accompanies this distribution, and is available at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Contributors:
+ *   Puppet Labs
+ */
 package com.puppetlabs.puppetdb.javaclient.model;
 
+import static com.puppetlabs.puppetdb.javaclient.query.Query.field;
+
+import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
+
+import com.google.gson.reflect.TypeToken;
+import com.puppetlabs.puppetdb.javaclient.query.Field;
 
 /**
  * A POJO that represents a PuppetDB Resource
  */
 public class Resource extends Entity {
+
+	@SuppressWarnings("javadoc")
+	public static final Field<Resource> TAG = field("tag");
+
+	@SuppressWarnings("javadoc")
+	public static final Field<Resource> CERTNAME = field("certname");
+
+	@SuppressWarnings("javadoc")
+	public static final Field<Resource> TYPE = field("type");
+
+	@SuppressWarnings("javadoc")
+	public static final Field<Resource> TITLE = field("title");
+
+	@SuppressWarnings("javadoc")
+	public static final Field<Resource> EXPORTED = field("exported");
+
+	@SuppressWarnings("javadoc")
+	public static final Field<Resource> SOURCEFILE = field("sourcefile");
+
+	@SuppressWarnings("javadoc")
+	public static final Field<Resource> SOURCELINE = field("sourceline");
+
+	// @fmtOff
+	/**
+	 * A type representing a {@link List} of {@link Resource} instances
+	 */
+	public static final Type LIST = new TypeToken<List<Resource>>() {}.getType();
+	// @fmtOn
 
 	private int sourceline;
 
@@ -25,18 +69,17 @@ public class Resource extends Entity {
 	private Map<String, Object> parameters;
 
 	/**
-	 * @return the sourceline
+	 * @return the certname
 	 */
-	public int getSourceline() {
-		return sourceline;
+	public String getCertname() {
+		return certname;
 	}
 
 	/**
-	 * @param sourceline
-	 *            the sourceline to set
+	 * @return the parameters
 	 */
-	public void setSourceline(int sourceline) {
-		this.sourceline = sourceline;
+	public Map<String, Object> getParameters() {
+		return parameters;
 	}
 
 	/**
@@ -47,26 +90,10 @@ public class Resource extends Entity {
 	}
 
 	/**
-	 * @param sourcefile
-	 *            the sourcefile to set
+	 * @return the sourceline
 	 */
-	public void setSourcefile(String sourcefile) {
-		this.sourcefile = sourcefile;
-	}
-
-	/**
-	 * @return the exported
-	 */
-	public boolean isExported() {
-		return exported;
-	}
-
-	/**
-	 * @param exported
-	 *            the exported to set
-	 */
-	public void setExported(boolean exported) {
-		this.exported = exported;
+	public int getSourceline() {
+		return sourceline;
 	}
 
 	/**
@@ -77,26 +104,10 @@ public class Resource extends Entity {
 	}
 
 	/**
-	 * @param tags
-	 *            the tags to set
-	 */
-	public void setTags(List<String> tags) {
-		this.tags = tags;
-	}
-
-	/**
 	 * @return the title
 	 */
 	public String getTitle() {
 		return title;
-	}
-
-	/**
-	 * @param title
-	 *            the title to set
-	 */
-	public void setTitle(String title) {
-		this.title = title;
 	}
 
 	/**
@@ -107,18 +118,10 @@ public class Resource extends Entity {
 	}
 
 	/**
-	 * @param type
-	 *            the type to set
+	 * @return the exported
 	 */
-	public void setType(String type) {
-		this.type = type;
-	}
-
-	/**
-	 * @return the certname
-	 */
-	public String getCertname() {
-		return certname;
+	public boolean isExported() {
+		return exported;
 	}
 
 	/**
@@ -130,10 +133,11 @@ public class Resource extends Entity {
 	}
 
 	/**
-	 * @return the parameters
+	 * @param exported
+	 *            the exported to set
 	 */
-	public Map<String, Object> getParameters() {
-		return parameters;
+	public void setExported(boolean exported) {
+		this.exported = exported;
 	}
 
 	/**
@@ -142,5 +146,45 @@ public class Resource extends Entity {
 	 */
 	public void setParameters(Map<String, Object> parameters) {
 		this.parameters = parameters;
+	}
+
+	/**
+	 * @param sourcefile
+	 *            the sourcefile to set
+	 */
+	public void setSourcefile(String sourcefile) {
+		this.sourcefile = sourcefile;
+	}
+
+	/**
+	 * @param sourceline
+	 *            the sourceline to set
+	 */
+	public void setSourceline(int sourceline) {
+		this.sourceline = sourceline;
+	}
+
+	/**
+	 * @param tags
+	 *            the tags to set
+	 */
+	public void setTags(List<String> tags) {
+		this.tags = tags;
+	}
+
+	/**
+	 * @param title
+	 *            the title to set
+	 */
+	public void setTitle(String title) {
+		this.title = title;
+	}
+
+	/**
+	 * @param type
+	 *            the type to set
+	 */
+	public void setType(String type) {
+		this.type = type;
 	}
 }

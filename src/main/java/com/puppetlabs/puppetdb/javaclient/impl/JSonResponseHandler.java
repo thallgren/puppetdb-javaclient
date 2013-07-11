@@ -1,14 +1,22 @@
+/**
+ * Copyright (c) 2013 Puppet Labs, Inc. and other contributors, as listed below.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Apache License, Version 2.0
+ * which accompanies this distribution, and is available at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Contributors:
+ *   Puppet Labs
+ */
 package com.puppetlabs.puppetdb.javaclient.impl;
 
-import static com.puppetlabs.puppetdb.javaclient.impl.HttpCommonsConnector.getStream;
+import static com.puppetlabs.puppetdb.javaclient.impl.HttpComponentsConnector.getStream;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Type;
-import java.util.Collections;
-import java.util.List;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -16,10 +24,10 @@ import org.apache.http.HttpStatus;
 import org.apache.http.StatusLine;
 import org.apache.http.client.HttpResponseException;
 import org.apache.http.client.ResponseHandler;
+import org.apache.http.util.EntityUtils;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
-import com.google.gson.annotations.Expose;
 import com.puppetlabs.puppetdb.javaclient.APIException;
 import com.puppetlabs.puppetdb.javaclient.HttpConnector;
 
@@ -29,45 +37,6 @@ import com.puppetlabs.puppetdb.javaclient.HttpConnector;
  * @param <V>
  */
 public class JSonResponseHandler<V> implements ResponseHandler<V> {
-	/**
-	 * A class that can handle error responses in JSON format
-	 */
-	public static class ErrorResponse {
-		@Expose
-		private List<String> errors;
-
-		/**
-		 * Returns the list of errors
-		 * 
-		 * @return The list of errors, possibly empty but never <code>null</code>
-		 */
-		public List<String> getErrors() {
-			return errors == null
-					? Collections.<String> emptyList()
-					: errors;
-		}
-
-		@Override
-		public String toString() {
-			if(errors == null || errors.isEmpty())
-				return "unknown reason";
-
-			int top = errors.size();
-			if(top == 1)
-				return errors.get(0);
-
-			StringBuilder bld = new StringBuilder();
-			bld.append("Multiple errors [");
-			bld.append(errors.get(0));
-			for(int idx = 1; idx < top; ++idx) {
-				bld.append(", ");
-				bld.append(errors.get(idx));
-			}
-			bld.append(']');
-			return bld.toString();
-		}
-	}
-
 	protected static <T> T parseJson(Gson gson, InputStream stream, Type type) throws IOException {
 		BufferedReader reader = new BufferedReader(new InputStreamReader(stream, HttpConnector.UTF_8), 2048);
 		StringBuilder bld = new StringBuilder();
@@ -134,11 +103,11 @@ public class JSonResponseHandler<V> implements ResponseHandler<V> {
 		if(code >= 300) {
 			String msg;
 			try {
-				ErrorResponse errors = parseJson(gson, getStream(response.getEntity()), ErrorResponse.class);
-				if(errors == null)
+				msg = EntityUtils.toString(response.getEntity());
+				if(msg == null)
 					msg = statusLine.getReasonPhrase();
 				else {
-					msg = statusLine.getReasonPhrase() + ": " + errors;
+					msg = statusLine.getReasonPhrase() + ": " + msg;
 				}
 			}
 			catch(Exception e) {

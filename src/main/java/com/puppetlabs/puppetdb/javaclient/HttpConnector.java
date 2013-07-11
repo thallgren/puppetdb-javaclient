@@ -1,3 +1,13 @@
+/**
+ * Copyright (c) 2013 Puppet Labs, Inc. and other contributors, as listed below.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Apache License, Version 2.0
+ * which accompanies this distribution, and is available at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Contributors:
+ *   Puppet Labs
+ */
 package com.puppetlabs.puppetdb.javaclient;
 
 import java.io.IOException;
@@ -19,7 +29,7 @@ public interface HttpConnector {
 	/**
 	 * The string used when presenting us to the server
 	 */
-	String USER_AGENT = "Geppetto/1.0.0"; //$NON-NLS-1$
+	String USER_AGENT = "PuppetDB Java Client/0.1.0"; //$NON-NLS-1$
 
 	/**
 	 * The encoding used by the API
@@ -31,14 +41,6 @@ public interface HttpConnector {
 	 * no executing request.
 	 */
 	void abortCurrentRequest();
-
-	/**
-	 * Authenticate, i.e. ask the server for the OAuth credentials unless we already have them
-	 * 
-	 * @throws IOException
-	 *             if the authentication was unsuccessful
-	 */
-	void authenticate() throws IOException;
 
 	/**
 	 * Send DELETE request to URI
@@ -131,8 +133,8 @@ public interface HttpConnector {
 	 * @return The response from the POST request
 	 * @throws IOException
 	 */
-	<V> V postUpload(String urlStr, Map<String, String> stringParts, InputStream in, String mimeType, String fileName,
-			long fileSize, Class<V> type) throws IOException;
+	<V> V postUpload(String urlStr, Map<String, String> stringParts, InputStream in, String mimeType, String fileName, long fileSize,
+			Class<V> type) throws IOException;
 
 	/**
 	 * Send data using a PUT request

@@ -1,3 +1,13 @@
+/**
+ * Copyright (c) 2013 Puppet Labs, Inc. and other contributors, as listed below.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Apache License, Version 2.0
+ * which accompanies this distribution, and is available at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Contributors:
+ *   Puppet Labs
+ */
 package com.puppetlabs.puppetdb.javaclient.impl;
 
 import java.io.IOException;
@@ -43,41 +53,13 @@ import org.apache.http.params.HttpParams;
 import com.google.gson.Gson;
 import com.google.inject.Inject;
 import com.puppetlabs.puppetdb.javaclient.APIPreferences;
-import com.puppetlabs.puppetdb.javaclient.Authenticator;
-import com.puppetlabs.puppetdb.javaclient.Authenticator.AuthResponse;
 import com.puppetlabs.puppetdb.javaclient.HttpConnector;
 
 /**
  * Class responsible for all HTTP request and response processing. Based on the
  * Apache {@link HttpClient}.
  */
-public class HttpCommonsConnector implements HttpConnector {
-
-	/**
-	 * Create a new client that trusts self signed certificates and will allow all hostnames.
-	 * If such a client cannot be created for some reason, then the default client will be used.
-	 * 
-	 * @return The new client
-	 */
-	public HttpClient createHttpClient() {
-		HttpParams params = new BasicHttpParams();
-		HttpConnectionParams.setConnectionTimeout(params, preferences.getConnectTimeout());
-		HttpConnectionParams.setSoTimeout(params, preferences.getReadTimeout());
-		HttpClient client = new DefaultHttpClient(params);
-		try {
-			client.getConnectionManager().getSchemeRegistry().register(
-				new Scheme("https", 443, new SSLSocketFactory(new TrustStrategy() {
-					@Override
-					public boolean isTrusted(X509Certificate[] arg0, String arg1) throws CertificateException {
-						return true;
-					}
-				}, SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER)));
-		}
-		catch(Exception e) {
-			// let's try without that ...
-		}
-		return client;
-	}
+public class HttpComponentsConnector implements HttpConnector {
 
 	static InputStream getStream(HttpEntity entity) throws IOException {
 		if(entity == null)
@@ -90,11 +72,7 @@ public class HttpCommonsConnector implements HttpConnector {
 
 	private final HttpClient httpClient;
 
-	private final Authenticator authenticator;
-
 	private final APIPreferences preferences;
-
-	private String credentials;
 
 	private HttpRequestBase currentRequest;
 
@@ -103,19 +81,17 @@ public class HttpCommonsConnector implements HttpConnector {
 	 * Creates a new HttpCommonsConnector.
 	 * </p>
 	 * <p>
-	 * For Guice injection only. Don't use this constructor from code
+	 * <b>For Guice injection only.</b> Don't use this constructor from code
 	 * </p>
 	 * 
 	 * @param gson
 	 *            The instance used when parsing or serializing JSON
 	 * @param preferences
 	 *            API connection preferences
-	 * @param authenticator
 	 */
 	@Inject
-	public HttpCommonsConnector(Gson gson, APIPreferences preferences, Authenticator authenticator) {
+	public HttpComponentsConnector(Gson gson, APIPreferences preferences) {
 		this.gson = gson;
-		this.authenticator = authenticator;
 		this.preferences = preferences;
 		httpClient = createHttpClient();
 	}
@@ -131,28 +107,13 @@ public class HttpCommonsConnector implements HttpConnector {
 	protected void assignJSONContent(HttpEntityEnclosingRequestBase request, Object params) {
 		if(params != null) {
 			request.addHeader(HttpHeaders.CONTENT_TYPE, CONTENT_TYPE_JSON + "; charset=" + UTF_8.name()); //$NON-NLS-1$
-			byte[] data = toJson(params).getBytes(UTF_8);
+			byte[] data = toJSON(params).getBytes(UTF_8);
 			request.setEntity(new ByteArrayEntity(data));
 		}
 	}
 
-	@Override
-	public void authenticate() throws IOException {
-		if(credentials == null) {
-			AuthResponse auth = authenticator.authenticate(preferences.getLogin(), preferences.getPassword());
-			String oauthToken = auth.getToken();
-			preferences.setOAuthAccessToken(oauthToken);
-			preferences.setOAuthScopes(auth.getScopes());
-			this.credentials = "Bearer " + oauthToken;
-		}
-	}
-
 	protected void configureRequest(final HttpRequestBase request) {
-		if(credentials != null)
-			request.addHeader(HttpHeaders.AUTHORIZATION, credentials);
-		else
-
-			request.addHeader(HttpHeaders.USER_AGENT, USER_AGENT);
+		request.addHeader(HttpHeaders.USER_AGENT, USER_AGENT);
 	}
 
 	private HttpGet createGetRequest(String urlStr, Map<String, String> params) {
@@ -168,13 +129,46 @@ public class HttpCommonsConnector implements HttpConnector {
 	}
 
 	/**
+	 * Create a new client that trusts self signed certificates and will allow all hostnames.
+	 * If such a client cannot be created for some reason, then the default client will be used.
+	 * 
+	 * @return The new client
+	 */
+	protected HttpClient createHttpClient() {
+		HttpParams params = new BasicHttpParams();
+		HttpConnectionParams.setConnectionTimeout(params, preferences.getConnectTimeout());
+		HttpConnectionParams.setSoTimeout(params, preferences.getReadTimeout());
+		HttpClient client = new DefaultHttpClient(params);
+		try {
+			client.getConnectionManager().getSchemeRegistry().register(new Scheme("https", 443, new SSLSocketFactory(new TrustStrategy() {
+				@Override
+				public boolean isTrusted(X509Certificate[] arg0, String arg1) throws CertificateException {
+					return true;
+				}
+			}, SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER)));
+		}
+		catch(Exception e) {
+			// let's try without that ...
+		}
+		return client;
+	}
+
+	/**
 	 * Create full URI from path
 	 * 
 	 * @param path
 	 * @return uri
 	 */
-	protected String createURI(final String path) {
-		return preferences.getURL() + path;
+	protected String createURI(String path) {
+		StringBuilder bld = new StringBuilder(preferences.getServiceURL());
+		if(path.startsWith("../"))
+			// Skip the 'v2' part (this is probably ../experimental/<something>
+			bld.append(path, 3, path.length());
+		else {
+			bld.append("v2");
+			bld.append(path);
+		}
+		return bld.toString();
 	}
 
 	@Override
@@ -254,8 +248,8 @@ public class HttpCommonsConnector implements HttpConnector {
 	}
 
 	@Override
-	public <V> V postUpload(String uri, Map<String, String> stringParts, InputStream in, String mimeType,
-			String fileName, final long fileSize, Class<V> type) throws IOException {
+	public <V> V postUpload(String uri, Map<String, String> stringParts, InputStream in, String mimeType, String fileName,
+			final long fileSize, Class<V> type) throws IOException {
 		HttpPost request = new HttpPost(createURI(uri));
 		configureRequest(request);
 
@@ -294,7 +288,7 @@ public class HttpCommonsConnector implements HttpConnector {
 	 * @return JSON string
 	 * @throws IOException
 	 */
-	protected String toJson(Object object) {
+	protected String toJSON(Object object) {
 		return gson.toJson(object);
 	}
 }

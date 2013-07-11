@@ -1,4 +1,14 @@
-package com.puppetlabs.puppetdb.javaclient;
+/**
+ * Copyright (c) 2013 Puppet Labs, Inc. and other contributors, as listed below.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Apache License, Version 2.0
+ * which accompanies this distribution, and is available at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Contributors:
+ *   Puppet Labs
+ */
+package com.puppetlabs.puppetdb.javaclient.impl;
 
 import java.lang.reflect.Type;
 import java.text.ParseException;
@@ -52,8 +62,7 @@ public class GsonProvider implements Provider<Gson> {
 		}
 
 		@Override
-		public Date deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
-				throws JsonParseException {
+		public Date deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
 			String source = json.getAsString();
 			Matcher m = ISO_8601_PTRN.matcher(source);
 			if(m.matches()) {
@@ -80,11 +89,11 @@ public class GsonProvider implements Provider<Gson> {
 		}
 	}
 
-	private static final Pattern ISO_8601_PTRN = Pattern.compile("^(\\d\\d\\d\\d-\\d\\d-\\d\\dT\\d\\d:\\d\\d:\\d\\d)(Z|(?:[+-]\\d\\d:\\d\\d))$");
+	private static final Pattern ISO_8601_PTRN = Pattern.compile("^(\\d\\d\\d\\d-\\d\\d-\\d\\dT\\d\\d:\\d\\d:\\d\\d(?:\\.\\d+)?)(Z|(?:[+-]\\d\\d:\\d\\d))$");
 
-	private static final Pattern RFC_822_PTRN = Pattern.compile("^(\\d\\d\\d\\d-\\d\\d-\\d\\dT\\d\\d:\\d\\d:\\d\\d)([+-]\\d\\d\\d\\d)$");
+	private static final Pattern RFC_822_PTRN = Pattern.compile("^(\\d\\d\\d\\d-\\d\\d-\\d\\dT\\d\\d:\\d\\d:\\d\\d(?:\\.\\d+)?)([+-]\\d\\d\\d\\d)$");
 
-	private static final SimpleDateFormat ISO_8601_TZ = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
+	private static final SimpleDateFormat ISO_8601_TZ = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
 
 	private static final GsonBuilder gsonBuilder;
 
@@ -92,10 +101,7 @@ public class GsonProvider implements Provider<Gson> {
 
 	static {
 		gsonBuilder = new GsonBuilder();
-		gsonBuilder.excludeFieldsWithoutExposeAnnotation();
-		gsonBuilder.setPrettyPrinting();
 		gsonBuilder.registerTypeAdapter(Date.class, new DateJsonAdapter());
-
 		gson = gsonBuilder.create();
 	}
 
