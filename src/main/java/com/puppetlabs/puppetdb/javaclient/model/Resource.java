@@ -23,7 +23,6 @@ import com.puppetlabs.puppetdb.javaclient.query.Field;
  * A POJO that represents a PuppetDB Resource
  */
 public class Resource extends Entity {
-
 	@SuppressWarnings("javadoc")
 	public static final Field<Resource> TAG = field("tag");
 
@@ -52,11 +51,15 @@ public class Resource extends Entity {
 	public static final Type LIST = new TypeToken<List<Resource>>() {}.getType();
 	// @fmtOn
 
-	private int sourceline;
+	private Integer sourceline;
 
 	private String sourcefile;
 
-	private boolean exported;
+	private Integer line; // Alias used when sending as a catalog resource
+
+	private String file; // Alias used when sending as a catalog resource
+
+	private Boolean exported;
 
 	private List<String> tags;
 
@@ -86,14 +89,18 @@ public class Resource extends Entity {
 	 * @return the sourcefile
 	 */
 	public String getSourcefile() {
-		return sourcefile;
+		return sourcefile == null
+				? file
+				: sourcefile;
 	}
 
 	/**
 	 * @return the sourceline
 	 */
-	public int getSourceline() {
-		return sourceline;
+	public Integer getSourceline() {
+		return sourceline == null
+				? line
+				: sourceline;
 	}
 
 	/**
@@ -120,7 +127,7 @@ public class Resource extends Entity {
 	/**
 	 * @return the exported
 	 */
-	public boolean isExported() {
+	public Boolean isExported() {
 		return exported;
 	}
 
@@ -136,8 +143,26 @@ public class Resource extends Entity {
 	 * @param exported
 	 *            the exported to set
 	 */
-	public void setExported(boolean exported) {
+	public void setExported(Boolean exported) {
 		this.exported = exported;
+	}
+
+	/**
+	 * @param file
+	 *            the file to set
+	 */
+	public void setFile(String file) {
+		this.sourcefile = null;
+		this.file = file;
+	}
+
+	/**
+	 * @param line
+	 *            the line to set
+	 */
+	public void setLine(Integer line) {
+		this.sourceline = null;
+		this.line = line;
 	}
 
 	/**
@@ -146,22 +171,6 @@ public class Resource extends Entity {
 	 */
 	public void setParameters(Map<String, Object> parameters) {
 		this.parameters = parameters;
-	}
-
-	/**
-	 * @param sourcefile
-	 *            the sourcefile to set
-	 */
-	public void setSourcefile(String sourcefile) {
-		this.sourcefile = sourcefile;
-	}
-
-	/**
-	 * @param sourceline
-	 *            the sourceline to set
-	 */
-	public void setSourceline(int sourceline) {
-		this.sourceline = sourceline;
 	}
 
 	/**

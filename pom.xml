@@ -27,7 +27,7 @@
 
 	<scm>
 		<connection>scm:git:git://github.com/puppetlabs/puppetdb-javaclient.git</connection>
-		<url>https://github.com/cloudsmith/geppetto</url>
+		<url>https://github.com/puppetlabs/puppetdb-javaclient</url>
 		<developerConnection>scm:git:git@github.com:puppetlabs/puppetdb-javaclient.git</developerConnection>
 	</scm>
 

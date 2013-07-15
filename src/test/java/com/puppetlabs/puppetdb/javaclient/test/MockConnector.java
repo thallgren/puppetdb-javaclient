@@ -30,6 +30,7 @@ import org.apache.http.client.HttpResponseException;
 import com.google.gson.Gson;
 import com.google.inject.Inject;
 import com.puppetlabs.puppetdb.javaclient.HttpConnector;
+import com.puppetlabs.puppetdb.javaclient.impl.GsonProvider;
 
 @SuppressWarnings("javadoc")
 public class MockConnector implements HttpConnector {
@@ -130,16 +131,12 @@ public class MockConnector implements HttpConnector {
 	}
 
 	@Override
-	public <V> V patch(String urlStr, Object params, Class<V> type) throws IOException {
+	public <V> V patch(String urlStr, Map<String, String> params, Class<V> type) throws IOException {
 		return null;
 	}
 
 	@Override
-	public void post(String urlStr) throws IOException {
-	}
-
-	@Override
-	public <V> V postJSON(String urlStr, Object params, Class<V> type) throws IOException {
+	public <V> V post(String urlStr, Map<String, String> params, Class<V> type) throws IOException {
 		return null;
 	}
 
@@ -150,7 +147,12 @@ public class MockConnector implements HttpConnector {
 	}
 
 	@Override
-	public <V> V put(String urlStr, Object params, Class<V> type) throws IOException {
+	public <V> V put(String urlStr, Map<String, String> params, Class<V> type) throws IOException {
 		return null;
+	}
+
+	@Override
+	public String toJSON(Object object) {
+		return GsonProvider.toJSON(object);
 	}
 }

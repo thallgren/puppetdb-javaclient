@@ -13,19 +13,26 @@ package com.puppetlabs.puppetdb.javaclient.impl;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.net.URLEncoder;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
+import org.apache.commons.codec.binary.Hex;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.HttpResponseException;
 
 import com.google.inject.Inject;
 import com.puppetlabs.puppetdb.javaclient.HttpConnector;
 import com.puppetlabs.puppetdb.javaclient.PuppetDBClient;
+import com.puppetlabs.puppetdb.javaclient.model.Catalog;
 import com.puppetlabs.puppetdb.javaclient.model.Entity;
 import com.puppetlabs.puppetdb.javaclient.model.Event;
 import com.puppetlabs.puppetdb.javaclient.model.Fact;
+import com.puppetlabs.puppetdb.javaclient.model.Facts;
 import com.puppetlabs.puppetdb.javaclient.model.Node;
 import com.puppetlabs.puppetdb.javaclient.model.Report;
 import com.puppetlabs.puppetdb.javaclient.model.Resource;
@@ -94,6 +101,11 @@ public class PuppetDBClientImpl implements PuppetDBClient {
 	}
 
 	@Override
+	public UUID deactivateNode(String node) throws IOException {
+		return postCommand("deactivate node", 1, node);
+	}
+
+	@Override
 	public List<Node> getActiveNodes(Expression<Node> query) throws IOException {
 		return getListResponse("/nodes", queryAsMap(query), Node.LIST);
 	}
@@ -101,11 +113,6 @@ public class PuppetDBClientImpl implements PuppetDBClient {
 	@Override
 	public List<Event> getEvents(Expression<Event> query) throws IOException {
 		return getListResponse("../experimental/events", queryAsMap(query), Event.LIST);
-	}
-
-	@Override
-	public List<Report> getReports(Expression<Report> query) throws IOException {
-		return getListResponse("../experimental/reports", queryAsMap(query), Report.LIST);
 	}
 
 	@Override
@@ -199,6 +206,11 @@ public class PuppetDBClientImpl implements PuppetDBClient {
 	}
 
 	@Override
+	public List<Report> getReports(Expression<Report> query) throws IOException {
+		return getListResponse("../experimental/reports", queryAsMap(query), Report.LIST);
+	}
+
+	@Override
 	public List<Resource> getResources(Expression<Resource> query, String... resourceQualifiers) throws IOException {
 		StringBuilder bld = new StringBuilder();
 		return getListResponse(buildPath(bld, "/resources", resourceQualifiers), queryAsMap(query), Resource.LIST);
@@ -226,5 +238,46 @@ public class PuppetDBClientImpl implements PuppetDBClient {
 				return null;
 			throw e;
 		}
+	}
+
+	protected UUID postCommand(String command, int version, Object payload) throws IOException {
+		CommandObject cmdObj = new CommandObject();
+		cmdObj.setCommand(command);
+		cmdObj.setVersion(version);
+		cmdObj.setPayload(payload);
+
+		String json = connector.toJSON(cmdObj);
+		Map<String, String> params = new HashMap<String, String>();
+		params.put("payload", json);
+		try {
+			MessageDigest md = MessageDigest.getInstance("SHA-1");
+			params.put("checksum", Hex.encodeHexString(md.digest(json.getBytes(HttpConnector.UTF_8))));
+		}
+		catch(NoSuchAlgorithmException e) {
+			throw new IllegalArgumentException(e);
+		}
+
+		CommandResponse response = connector.post("/commands/", params, CommandResponse.class);
+		return response == null
+				? null
+				: UUID.fromString(response.getUuid());
+	}
+
+	@Override
+	public UUID replaceCatalog(Catalog catalog) throws IOException {
+		return postCommand("replace catalog", 2, catalog);
+	}
+
+	@Override
+	public UUID replaceFacts(Facts facts) throws IOException {
+		// TODO: This is rather odd since we json encode something that will
+		// be json encoded again.
+		String jsonFacts = connector.toJSON(facts);
+		return postCommand("replace facts", 1, jsonFacts);
+	}
+
+	@Override
+	public UUID storeReport(Report report) throws IOException {
+		return postCommand("store report", 1, report);
 	}
 }

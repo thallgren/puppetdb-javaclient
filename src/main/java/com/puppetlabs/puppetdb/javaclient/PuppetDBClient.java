@@ -13,9 +13,12 @@ package com.puppetlabs.puppetdb.javaclient;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
+import com.puppetlabs.puppetdb.javaclient.model.Catalog;
 import com.puppetlabs.puppetdb.javaclient.model.Event;
 import com.puppetlabs.puppetdb.javaclient.model.Fact;
+import com.puppetlabs.puppetdb.javaclient.model.Facts;
 import com.puppetlabs.puppetdb.javaclient.model.Node;
 import com.puppetlabs.puppetdb.javaclient.model.Report;
 import com.puppetlabs.puppetdb.javaclient.model.Resource;
@@ -26,6 +29,14 @@ import com.puppetlabs.puppetdb.javaclient.query.Expression;
  * query for nodes, facts, resources, and reports.
  */
 public interface PuppetDBClient {
+
+	/**
+	 * @param node
+	 *            The name of a node which will be deactivated effective as of the time the command is <i>processed</i>.
+	 * @return a UUID corresponding to the submitted command
+	 * @throws IOException
+	 */
+	UUID deactivateNode(String node) throws IOException;
 
 	/**
 	 * Queries the database for active nodes.
@@ -157,4 +168,27 @@ public interface PuppetDBClient {
 	 */
 	List<Resource> getResources(Expression<Resource> query, String... resourceQualifiers) throws IOException;
 
+	/**
+	 * @param catalog
+	 *            The catalog to replace
+	 * @return a UUID corresponding to the submitted command
+	 * @throws IOException
+	 */
+	UUID replaceCatalog(Catalog catalog) throws IOException;
+
+	/**
+	 * @param facts
+	 *            Facts to replace
+	 * @return a UUID corresponding to the submitted command
+	 * @throws IOException
+	 */
+	UUID replaceFacts(Facts facts) throws IOException;
+
+	/**
+	 * @param report
+	 *            A report containing events that occured on Puppet resources
+	 * @return a UUID corresponding to the submitted command
+	 * @throws IOException
+	 */
+	UUID storeReport(Report report) throws IOException;
 }

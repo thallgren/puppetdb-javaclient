@@ -67,49 +67,14 @@ public class Report extends Entity {
 	@SerializedName("report-format")
 	private int reportFormat;
 
-	/**
-	 * @return the endTime
-	 */
-	public Date getEndTime() {
-		return endTime;
-	}
+	@SerializedName("resource-events")
+	private List<Event> resourceEvents;
 
 	/**
-	 * @param endTime
-	 *            the endTime to set
+	 * @return the certname
 	 */
-	public void setEndTime(Date endTime) {
-		this.endTime = endTime;
-	}
-
-	/**
-	 * @return the puppetVersion
-	 */
-	public String getPuppetVersion() {
-		return puppetVersion;
-	}
-
-	/**
-	 * @param puppetVersion
-	 *            the puppetVersion to set
-	 */
-	public void setPuppetVersion(String puppetVersion) {
-		this.puppetVersion = puppetVersion;
-	}
-
-	/**
-	 * @return the receiveTime
-	 */
-	public Date getReceiveTime() {
-		return receiveTime;
-	}
-
-	/**
-	 * @param receiveTime
-	 *            the receiveTime to set
-	 */
-	public void setReceiveTime(Date receiveTime) {
-		this.receiveTime = receiveTime;
+	public String getCertname() {
+		return certname;
 	}
 
 	/**
@@ -120,29 +85,16 @@ public class Report extends Entity {
 	}
 
 	/**
-	 * @param configurationVersion
-	 *            the configurationVersion to set
+	 * @return the endTime
 	 */
-	public void setConfigurationVersion(String configurationVersion) {
-		this.configurationVersion = configurationVersion;
+	public Date getEndTime() {
+		return endTime;
 	}
 
 	/**
-	 * @return the startTime
-	 */
-	public Date getStartTime() {
-		return startTime;
-	}
-
-	/**
-	 * @param startTime
-	 *            the startTime to set
-	 */
-	public void setStartTime(Date startTime) {
-		this.startTime = startTime;
-	}
-
-	/**
+	 * The hash is a read-only attribute. It cannot be set when sending a report to the
+	 * PuppetDB server.
+	 * 
 	 * @return the hash
 	 */
 	public String getHash() {
@@ -150,18 +102,31 @@ public class Report extends Entity {
 	}
 
 	/**
-	 * @param hash
-	 *            the hash to set
+	 * @return the puppetVersion
 	 */
-	public void setHash(String hash) {
-		this.hash = hash;
+	public String getPuppetVersion() {
+		return puppetVersion;
 	}
 
 	/**
-	 * @return the certname
+	 * @return the receiveTime
 	 */
-	public String getCertname() {
-		return certname;
+	public Date getReceiveTime() {
+		return receiveTime;
+	}
+
+	/**
+	 * @return the reportFormat
+	 */
+	public int getReportFormat() {
+		return reportFormat;
+	}
+
+	/**
+	 * @return the startTime
+	 */
+	public Date getStartTime() {
+		return startTime;
 	}
 
 	/**
@@ -173,10 +138,35 @@ public class Report extends Entity {
 	}
 
 	/**
-	 * @return the reportFormat
+	 * @param configurationVersion
+	 *            the configurationVersion to set
 	 */
-	public int getReportFormat() {
-		return reportFormat;
+	public void setConfigurationVersion(String configurationVersion) {
+		this.configurationVersion = configurationVersion;
+	}
+
+	/**
+	 * @param endTime
+	 *            the endTime to set
+	 */
+	public void setEndTime(Date endTime) {
+		this.endTime = endTime;
+	}
+
+	/**
+	 * @param puppetVersion
+	 *            the puppetVersion to set
+	 */
+	public void setPuppetVersion(String puppetVersion) {
+		this.puppetVersion = puppetVersion;
+	}
+
+	/**
+	 * @param receiveTime
+	 *            the receiveTime to set
+	 */
+	public void setReceiveTime(Date receiveTime) {
+		this.receiveTime = receiveTime;
 	}
 
 	/**
@@ -185,5 +175,23 @@ public class Report extends Entity {
 	 */
 	public void setReportFormat(int reportFormat) {
 		this.reportFormat = reportFormat;
+	}
+
+	/**
+	 * Set the resource events for this report. The resource-events is a write only attribute
+	 * and this method should only be used when sending to the PuppetDB server.
+	 * 
+	 * @param resourceEvents
+	 */
+	public void setResourceEvents(List<Event> resourceEvents) {
+		this.resourceEvents = resourceEvents;
+	}
+
+	/**
+	 * @param startTime
+	 *            the startTime to set
+	 */
+	public void setStartTime(Date startTime) {
+		this.startTime = startTime;
 	}
 }

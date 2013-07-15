@@ -27,6 +27,11 @@ public interface HttpConnector {
 	String CONTENT_TYPE_JSON = "application/json"; //$NON-NLS-1$
 
 	/**
+	 * The content type of posts and responses.
+	 */
+	String CONTENT_TYPE_WWW_FORM_URLENCODED = "application/x-www-form-urlencoded"; //$NON-NLS-1$
+
+	/**
 	 * The string used when presenting us to the server
 	 */
 	String USER_AGENT = "PuppetDB Java Client/0.1.0"; //$NON-NLS-1$
@@ -90,15 +95,7 @@ public interface HttpConnector {
 	 * @return The response from the PATH request
 	 * @throws IOException
 	 */
-	<V> V patch(String urlStr, Object params, Class<V> type) throws IOException;
-
-	/**
-	 * Post to URI
-	 * 
-	 * @param urlStr
-	 * @throws IOException
-	 */
-	void post(String urlStr) throws IOException;
+	<V> V patch(String urlStr, Map<String, String> params, Class<V> type) throws IOException;
 
 	/**
 	 * Post data to URI
@@ -111,7 +108,7 @@ public interface HttpConnector {
 	 * @return response
 	 * @throws IOException
 	 */
-	<V> V postJSON(String urlStr, Object params, Class<V> type) throws IOException;
+	<V> V post(String urlStr, Map<String, String> params, Class<V> type) throws IOException;
 
 	/**
 	 * Post using a MultiPart entity
@@ -149,5 +146,14 @@ public interface HttpConnector {
 	 * @return response The response of the PUT request
 	 * @throws IOException
 	 */
-	<V> V put(String urlStr, Object params, Class<V> type) throws IOException;
+	<V> V put(String urlStr, Map<String, String> params, Class<V> type) throws IOException;
+
+	/**
+	 * Convert object to a JSON string
+	 * 
+	 * @param object
+	 *            The object to convert
+	 * @return JSON string
+	 */
+	String toJSON(Object object);
 }

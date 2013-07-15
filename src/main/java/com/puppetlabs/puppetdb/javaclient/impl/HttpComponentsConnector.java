@@ -13,6 +13,7 @@ package com.puppetlabs.puppetdb.javaclient.impl;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Type;
 import java.net.URI;
 import java.security.cert.CertificateException;
@@ -25,6 +26,7 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
+import org.apache.http.NameValuePair;
 import org.apache.http.StatusLine;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
@@ -40,7 +42,7 @@ import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.conn.ssl.TrustStrategy;
-import org.apache.http.entity.ByteArrayEntity;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.entity.mime.MultipartEntity;
 import org.apache.http.entity.mime.content.InputStreamBody;
 import org.apache.http.entity.mime.content.StringBody;
@@ -104,15 +106,24 @@ public class HttpComponentsConnector implements HttpConnector {
 		}
 	}
 
-	protected void assignJSONContent(HttpEntityEnclosingRequestBase request, Object params) {
-		if(params != null) {
-			request.addHeader(HttpHeaders.CONTENT_TYPE, CONTENT_TYPE_JSON + "; charset=" + UTF_8.name()); //$NON-NLS-1$
-			byte[] data = toJSON(params).getBytes(UTF_8);
-			request.setEntity(new ByteArrayEntity(data));
+	protected void assignContent(HttpEntityEnclosingRequestBase request, Map<String, String> params) {
+		if(params != null && !params.isEmpty()) {
+			List<NameValuePair> pairs = new ArrayList<NameValuePair>(params.size());
+			for(Map.Entry<String, String> param : params.entrySet())
+				pairs.add(new BasicNameValuePair(param.getKey(), param.getValue()));
+			try {
+				StringEntity entity = new StringEntity(URLEncodedUtils.format(pairs, UTF_8.name()), UTF_8.name());
+				entity.setContentType(CONTENT_TYPE_WWW_FORM_URLENCODED);
+				request.setEntity(entity);
+			}
+			catch(UnsupportedEncodingException e) {
+				throw new IllegalArgumentException(e);
+			}
 		}
 	}
 
 	protected void configureRequest(final HttpRequestBase request) {
+		request.addHeader(HttpHeaders.ACCEPT, CONTENT_TYPE_JSON);
 		request.addHeader(HttpHeaders.USER_AGENT, USER_AGENT);
 	}
 
@@ -140,7 +151,7 @@ public class HttpComponentsConnector implements HttpConnector {
 		HttpConnectionParams.setSoTimeout(params, preferences.getReadTimeout());
 		HttpClient client = new DefaultHttpClient(params);
 		try {
-			client.getConnectionManager().getSchemeRegistry().register(new Scheme("https", 443, new SSLSocketFactory(new TrustStrategy() {
+			client.getConnectionManager().getSchemeRegistry().register(new Scheme("https", 9081, new SSLSocketFactory(new TrustStrategy() {
 				@Override
 				public boolean isTrusted(X509Certificate[] arg0, String arg1) throws CertificateException {
 					return true;
@@ -219,7 +230,7 @@ public class HttpComponentsConnector implements HttpConnector {
 	}
 
 	@Override
-	public <V> V patch(final String uri, final Object params, final Class<V> type) throws IOException {
+	public <V> V patch(final String uri, final Map<String, String> params, final Class<V> type) throws IOException {
 		// HttpPatch is introduced in 4.2. This code is compatible with 4.1 in order to
 		// play nice with Eclipse Juno and Kepler
 		HttpPost request = new HttpPost(createURI(uri)) {
@@ -230,20 +241,15 @@ public class HttpComponentsConnector implements HttpConnector {
 		};
 
 		configureRequest(request);
-		assignJSONContent(request, params);
+		assignContent(request, params);
 		return executeRequest(request, type);
 	}
 
 	@Override
-	public void post(String uri) throws IOException {
-		postJSON(uri, null, null);
-	}
-
-	@Override
-	public <V> V postJSON(final String uri, final Object params, final Class<V> type) throws IOException {
+	public <V> V post(final String uri, final Map<String, String> params, final Class<V> type) throws IOException {
 		HttpPost request = new HttpPost(createURI(uri));
 		configureRequest(request);
-		assignJSONContent(request, params);
+		assignContent(request, params);
 		return executeRequest(request, type);
 	}
 
@@ -268,10 +274,10 @@ public class HttpComponentsConnector implements HttpConnector {
 	}
 
 	@Override
-	public <V> V put(final String uri, final Object params, final Class<V> type) throws IOException {
+	public <V> V put(final String uri, final Map<String, String> params, final Class<V> type) throws IOException {
 		HttpPut request = new HttpPut(createURI(uri));
 		configureRequest(request);
-		assignJSONContent(request, params);
+		assignContent(request, params);
 		return executeRequest(request, type);
 	}
 
@@ -281,14 +287,8 @@ public class HttpComponentsConnector implements HttpConnector {
 		currentRequest = request;
 	}
 
-	/**
-	 * Convert object to a JSON string
-	 * 
-	 * @param object
-	 * @return JSON string
-	 * @throws IOException
-	 */
-	protected String toJSON(Object object) {
+	@Override
+	public String toJSON(Object object) {
 		return gson.toJson(object);
 	}
 }

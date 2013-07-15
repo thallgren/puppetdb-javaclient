@@ -24,7 +24,11 @@ import com.puppetlabs.puppetdb.javaclient.query.Field;
  * A POJO that represents a PuppetDB Event
  */
 public class Event extends Entity {
-	enum Status {
+	/**
+	 * An enum representing the outcome of an event
+	 */
+	@SuppressWarnings("javadoc")
+	public enum Status {
 		success, failed, noop, skipped
 	}
 
@@ -97,86 +101,24 @@ public class Event extends Entity {
 	}
 
 	/**
-	 * @param certname
-	 *            the certname to set
+	 * @return the message
 	 */
-	public void setCertname(String certname) {
-		this.certname = certname;
+	public String getMessage() {
+		return message;
 	}
 
 	/**
-	 * @return the report
+	 * @return the newValue
 	 */
-	public String getReport() {
-		return report;
+	public String getNewValue() {
+		return newValue;
 	}
 
 	/**
-	 * @param report
-	 *            the report to set
+	 * @return the oldValue
 	 */
-	public void setReport(String report) {
-		this.report = report;
-	}
-
-	/**
-	 * @return the status
-	 */
-	public Status getStatus() {
-		return status;
-	}
-
-	/**
-	 * @param status
-	 *            the status to set
-	 */
-	public void setStatus(Status status) {
-		this.status = status;
-	}
-
-	/**
-	 * @return the timestamp
-	 */
-	public Date getTimestamp() {
-		return timestamp;
-	}
-
-	/**
-	 * @param timestamp
-	 *            the timestamp to set
-	 */
-	public void setTimestamp(Date timestamp) {
-		this.timestamp = timestamp;
-	}
-
-	/**
-	 * @return the resourceType
-	 */
-	public String getResourceType() {
-		return resourceType;
-	}
-
-	/**
-	 * @param resourceType
-	 *            the resourceType to set
-	 */
-	public void setResourceType(String resourceType) {
-		this.resourceType = resourceType;
-	}
-
-	/**
-	 * @return the resourceTitle
-	 */
-	public String getResourceTitle() {
-		return resourceTitle;
-	}
-
-	/**
-	 * @param resourceTitle
-	 *            the resourceTitle to set
-	 */
-	public void setResourceTitle(String resourceTitle) {
-		this.resourceTitle = resourceTitle;
+	public String getOldValue() {
+		return oldValue;
 	}
 
 	/**
@@ -187,18 +129,46 @@ public class Event extends Entity {
 	}
 
 	/**
-	 * @param property
-	 *            the property to set
+	 * @return the report
 	 */
-	public void setProperty(String property) {
-		this.property = property;
+	public String getReport() {
+		return report;
 	}
 
 	/**
-	 * @return the newValue
+	 * @return the resourceTitle
 	 */
-	public String getNewValue() {
-		return newValue;
+	public String getResourceTitle() {
+		return resourceTitle;
+	}
+
+	/**
+	 * @return the resourceType
+	 */
+	public String getResourceType() {
+		return resourceType;
+	}
+
+	/**
+	 * @return the status
+	 */
+	public Status getStatus() {
+		return status;
+	}
+
+	/**
+	 * @return the timestamp
+	 */
+	public Date getTimestamp() {
+		return timestamp;
+	}
+
+	/**
+	 * @param message
+	 *            the message to set
+	 */
+	public void setMessage(String message) {
+		this.message = message;
 	}
 
 	/**
@@ -210,13 +180,6 @@ public class Event extends Entity {
 	}
 
 	/**
-	 * @return the oldValue
-	 */
-	public String getOldValue() {
-		return oldValue;
-	}
-
-	/**
 	 * @param oldValue
 	 *            the oldValue to set
 	 */
@@ -225,17 +188,42 @@ public class Event extends Entity {
 	}
 
 	/**
-	 * @return the message
+	 * @param property
+	 *            the property to set
 	 */
-	public String getMessage() {
-		return message;
+	public void setProperty(String property) {
+		this.property = property;
 	}
 
 	/**
-	 * @param message
-	 *            the message to set
+	 * @param resourceTitle
+	 *            the resourceTitle to set
 	 */
-	public void setMessage(String message) {
-		this.message = message;
+	public void setResourceTitle(String resourceTitle) {
+		this.resourceTitle = resourceTitle;
+	}
+
+	/**
+	 * @param resourceType
+	 *            the resourceType to set
+	 */
+	public void setResourceType(String resourceType) {
+		this.resourceType = resourceType;
+	}
+
+	/**
+	 * @param status
+	 *            the status to set
+	 */
+	public void setStatus(Status status) {
+		this.status = status;
+	}
+
+	/**
+	 * @param timestamp
+	 *            the timestamp to set
+	 */
+	public void setTimestamp(Date timestamp) {
+		this.timestamp = timestamp;
 	}
 }
