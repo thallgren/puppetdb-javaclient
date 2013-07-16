@@ -16,8 +16,9 @@ import java.security.cert.CertificateFactory;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 
+import javax.net.ssl.TrustManagerFactory;
+
 import org.apache.http.conn.ssl.SSLSocketFactory;
-import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openssl.PEMKeyPair;
@@ -55,15 +56,19 @@ public class PEM_SSLSocketFactoryProvider implements Provider<SSLSocketFactory> 
 
 			PrivateKey privateKey = getPrivateKey(keyPair);
 
+			KeyStore truststore = KeyStore.getInstance("BKS");
+			truststore.load(null);
+			// initialize trust manager factory with the read truststore
+			TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+			trustManagerFactory.init(truststore);
+
 			KeyStore keystore = KeyStore.getInstance("JKS");
 			keystore.load(null);
-			// keystore.setCertificateEntry("ca-cert-alias", caCert);
-			// keystore.setCertificateEntry("cert-alias", cert);
+			truststore.setCertificateEntry("ca-cert-alias", caCert);
+			truststore.setCertificateEntry("cert-alias", cert);
 			keystore.setKeyEntry("key-alias", privateKey, PASSWORD.toCharArray(), new Certificate[] { cert });
 
-			return new SSLSocketFactory(
-				SSLSocketFactory.TLS, keystore, PASSWORD, null, null, new TrustSelfSignedStrategy(),
-				SSLSocketFactory.BROWSER_COMPATIBLE_HOSTNAME_VERIFIER);
+			return new SSLSocketFactory(keystore, PASSWORD, truststore);
 		}
 		catch(RuntimeException e) {
 			throw e;
