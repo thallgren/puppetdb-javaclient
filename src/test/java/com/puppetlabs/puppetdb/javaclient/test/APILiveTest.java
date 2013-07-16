@@ -20,6 +20,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -30,6 +31,7 @@ import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.puppetlabs.puppetdb.javaclient.BasicAPIPreferences;
 import com.puppetlabs.puppetdb.javaclient.PuppetDBClient;
 import com.puppetlabs.puppetdb.javaclient.PuppetDBClientFactory;
 import com.puppetlabs.puppetdb.javaclient.model.Event;
@@ -48,11 +50,16 @@ public class APILiveTest {
 	// TODO: Make it configurable from an external file
 	private static final String NODE_THAT_IS_KNOWN_TO_EXIST = "home.tada.se";
 
-	private static final String SERVICE_URL = "https://localhost:9081/";
+	private static final String SERVICE_URL = "https://home.tada.se:9081/";
 
 	@Before
 	public void before() {
-		client = PuppetDBClientFactory.newClient(SERVICE_URL);
+		BasicAPIPreferences prefs = new BasicAPIPreferences();
+		prefs.setServiceURL(SERVICE_URL);
+		prefs.setCaCertPEM(new File("/home/thhal/ssl/ca/ca_crt.pem"));
+		prefs.setCertPEM(new File("/home/thhal/ssl/certs/home.tada.se.pem"));
+		prefs.setPrivateKeyPEM(new File("/home/thhal/ssl/private_keys/home.tada.se.pem"));
+		client = PuppetDBClientFactory.newClient(prefs);
 	}
 
 	@Test

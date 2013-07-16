@@ -16,8 +16,6 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Type;
 import java.net.URI;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -41,7 +39,6 @@ import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.ssl.SSLSocketFactory;
-import org.apache.http.conn.ssl.TrustStrategy;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.entity.mime.MultipartEntity;
 import org.apache.http.entity.mime.content.InputStreamBody;
@@ -88,14 +85,16 @@ public class HttpComponentsConnector implements HttpConnector {
 	 * 
 	 * @param gson
 	 *            The instance used when parsing or serializing JSON
+	 * @param sslSocketFactory
+	 *            The SSL socket factory to use for the connection
 	 * @param preferences
 	 *            API connection preferences
 	 */
 	@Inject
-	public HttpComponentsConnector(Gson gson, APIPreferences preferences) {
+	public HttpComponentsConnector(Gson gson, SSLSocketFactory sslSocketFactory, APIPreferences preferences) {
 		this.gson = gson;
 		this.preferences = preferences;
-		httpClient = createHttpClient();
+		httpClient = createHttpClient(sslSocketFactory);
 	}
 
 	@Override
@@ -145,18 +144,14 @@ public class HttpComponentsConnector implements HttpConnector {
 	 * 
 	 * @return The new client
 	 */
-	protected HttpClient createHttpClient() {
+	protected HttpClient createHttpClient(SSLSocketFactory sslSocketFactory) {
 		HttpParams params = new BasicHttpParams();
 		HttpConnectionParams.setConnectionTimeout(params, preferences.getConnectTimeout());
 		HttpConnectionParams.setSoTimeout(params, preferences.getReadTimeout());
+
 		HttpClient client = new DefaultHttpClient(params);
 		try {
-			client.getConnectionManager().getSchemeRegistry().register(new Scheme("https", 9081, new SSLSocketFactory(new TrustStrategy() {
-				@Override
-				public boolean isTrusted(X509Certificate[] arg0, String arg1) throws CertificateException {
-					return true;
-				}
-			}, SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER)));
+			client.getConnectionManager().getSchemeRegistry().register(new Scheme("https", 9081, sslSocketFactory));
 		}
 		catch(Exception e) {
 			// let's try without that ...

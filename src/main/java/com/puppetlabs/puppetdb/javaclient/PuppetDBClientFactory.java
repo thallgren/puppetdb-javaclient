@@ -32,14 +32,13 @@ public class PuppetDBClientFactory {
 	}
 
 	/**
-	 * Create a new PuppetDBClient that will connect to the given <code>serviceURL</code>. It must be an absolute URL that ends
-	 * with a slash. Do not include the version segment.
+	 * Create a new PuppetDBClient that will connect using the given <code>preferences</code>.
 	 * 
-	 * @param serviceURL
-	 *            The URL of the PuppetDB service
+	 * @param preferences
+	 *            The preferences used for hte connection
 	 * @return The created client instance
 	 */
-	public static PuppetDBClient newClient(String serviceURL) {
-		return newClient(new DefaultModule(serviceURL));
+	public static PuppetDBClient newClient(APIPreferences preferences) {
+		return newClient(new DefaultModule(preferences));
 	}
 }

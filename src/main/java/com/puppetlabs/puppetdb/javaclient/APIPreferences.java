@@ -10,11 +10,12 @@
  */
 package com.puppetlabs.puppetdb.javaclient;
 
+import java.io.File;
+
 /**
  * Preferences used when connecting to the PuppetDB instance
  */
 public interface APIPreferences {
-
 	/**
 	 * Connection timeout in milliseconds
 	 * 
@@ -36,4 +37,25 @@ public interface APIPreferences {
 	 * @return The absolute URL of the PuppetDB service
 	 */
 	String getServiceURL();
+
+	/**
+	 * Returns the path of the Certificate Authority Certificate PEM file.
+	 * 
+	 * @return An absolute path
+	 */
+	File getCaCertPEM();
+
+	/**
+	 * Returns the path of the Certificate PEM file.
+	 * 
+	 * @return An absolute path
+	 */
+	File getCertPEM();
+
+	/**
+	 * Returns the path of the Private Key PEM file.
+	 * 
+	 * @return An absolute path
+	 */
+	File getPrivateKeyPEM();
 }
